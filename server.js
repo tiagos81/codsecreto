@@ -9,7 +9,8 @@ const PORT = process.env.PORT || 8080;
 
 app.use(cors());
 
-app.get(https://codsecreto-production.up.railway.app/, (req, res) => {
+// ✅ Rota correta para retornar as variáveis de ambiente
+app.get("/env", (req, res) => {
     res.json({
         MAIN_PASSWORD: process.env.MAIN_PASSWORD,
         UNLOCK_PASSWORD: process.env.UNLOCK_PASSWORD
