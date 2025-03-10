@@ -132,6 +132,11 @@
       color: black;
       font-size: 21px;
     }
+    .attempts {
+      margin-top: 10px;
+      font-size: 16px;
+      color: yellow;
+    }
   </style>
 </head>
 <body>
@@ -165,11 +170,13 @@
         <button onclick="checkPassword()">✔</button>
       </div>
       <p id="errorMessage" class="error-message hidden">Senha incorreta! Tente novamente.</p>
+      <p id="attemptsMessage" class="attempts">Tentativas restantes: <span id="attemptsLeft">3</span></p>
     </div>
   </div>
 
   <script>
     let encryptedPassword = "";
+    let attemptsLeft = 3;
 
     async function fetchConfig() {
       const response = await fetch('/config');
@@ -193,6 +200,10 @@
       document.getElementById("password").value = "";
     }
 
+    function updateAttemptsMessage() {
+      document.getElementById("attemptsLeft").textContent = attemptsLeft;
+    }
+
     async function checkPassword() {
       let input = document.getElementById("password").value.trim();
 
@@ -211,6 +222,14 @@
         setTimeout(() => {
           document.getElementById("password").classList.remove("input-error");
         }, 500);
+
+        attemptsLeft--;
+        updateAttemptsMessage();
+
+        if (attemptsLeft <= 0) {
+          document.getElementById("keypad").classList.add("hidden");
+          document.getElementById("errorMessage").classList.add("hidden");
+        }
       }
     }
   </script>
