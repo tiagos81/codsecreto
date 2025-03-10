@@ -1,19 +1,21 @@
-require('dotenv').config();
-const express = require('express');
+const express = require("express");
+const dotenv = require("dotenv");
+const cors = require("cors");
+
+dotenv.config();
+
 const app = express();
-const path = require('path');
+const PORT = process.env.PORT || 3000;
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+app.use(cors());
+
+app.get("/env", (req, res) => {
+    res.json({
+        MAIN_PASSWORD: process.env.MAIN_PASSWORD,
+        UNLOCK_PASSWORD: process.env.UNLOCK_PASSWORD
+    });
 });
 
-app.get('/config', (req, res) => {
-  res.json({
-    mainPassword: process.env.ENCRYPTED_MAIN_PASSWORD,
-    unlockPassword: process.env.ENCRYPTED_UNLOCK_PASSWORD
-  });
-});
-
-app.listen(3000, () => {
-  console.log('Servidor rodando na porta 3000');
+app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
 });
