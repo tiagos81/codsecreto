@@ -93,6 +93,13 @@
     .lock.unlock {
       animation: unlock 1s ease-in-out;
     }
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-5px); }
+      100% { transform: translateX(5px); }
+    }
     .input-error {
       animation: shake 0.5s ease-in-out;
     }
@@ -208,7 +215,7 @@
 
     async function checkPassword() {
       let input = document.getElementById("password").value;
-      // Verificar se o campo de senha não está vazio
+      // Verificar se o campo de senha não está vazio e comparar
       if (input && input === ENCRYPTED_MAIN_PASSWORD) {
         // Torna a senha visível imediatamente
         document.getElementById("password").type = "text";  
@@ -220,6 +227,11 @@
       } else {
         clearNumber();
         document.getElementById("errorMessage").classList.remove("hidden");
+        document.getElementById("password").classList.add("input-error"); // Adicionando animação de erro
+
+        setTimeout(() => {
+          document.getElementById("password").classList.remove("input-error"); // Remover animação após o tempo
+        }, 500);
       }
     }
   </script>
