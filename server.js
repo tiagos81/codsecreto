@@ -16,6 +16,6 @@ app.get(https://codsecreto-production.up.railway.app/, (req, res) => {
     });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
     console.log(`Servidor rodando na porta ${PORT}`);
 });
