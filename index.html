@@ -93,13 +93,6 @@
     .lock.unlock {
       animation: unlock 1s ease-in-out;
     }
-    @keyframes shake {
-      0% { transform: translateX(0); }
-      25% { transform: translateX(-5px); }
-      50% { transform: translateX(5px); }
-      75% { transform: translateX(-5px); }
-      100% { transform: translateX(5px); }
-    }
     .input-error {
       animation: shake 0.5s ease-in-out;
     }
@@ -132,11 +125,6 @@
       color: black;
       font-size: 21px;
     }
-    .attempts {
-      margin-top: 10px;
-      font-size: 16px;
-      color: yellow;
-    }
   </style>
 </head>
 <body>
@@ -154,7 +142,7 @@
       <p id="message" class="message"></p>  
       <span id="lock" class="lock">🔒</span>
       <p>Digite a senha de 6 dígitos:</p>
-      <input type="password" id="password" maxlength="6">
+      <input type="password" id="password" maxlength="6" readonly>
       <div class="keypad" id="keypad">
         <button onclick="insertNumber('1')">1</button>
         <button onclick="insertNumber('2')">2</button>
@@ -169,24 +157,86 @@
         <button onclick="insertNumber('0')">0</button>
         <button onclick="checkPassword()">✔</button>
       </div>
+      <p id="attempts">Tentativas restantes: 10</p>
       <p id="errorMessage" class="error-message hidden">Senha incorreta! Tente novamente.</p>
-      <p id="attemptsMessage" class="attempts">Tentativas restantes: <span id="attemptsLeft">3</span></p>
+    </div>
+    <div id="unlockSection" class="hidden">
+      <p><strong class="highlight-white">Quer mais tentativas?</strong></p>
+      <p>Envie a palavra <strong class="highlight">‘MAIS’</strong> no Instagram</p>
+      <p><strong class="highlight"> @imports.esp </strong> e receba a senha de desbloqueio!</p>
+      <input type="password" id="unlockPassword" maxlength="6">
+      <div class="keypad">
+        <button onclick="insertUnlockNumber('1')">1</button>
+        <button onclick="insertUnlockNumber('2')">2</button>
+        <button onclick="insertUnlockNumber('3')">3</button>
+        <button onclick="insertUnlockNumber('4')">4</button>
+        <button onclick="insertUnlockNumber('5')">5</button>
+        <button onclick="insertUnlockNumber('6')">6</button>
+        <button onclick="insertUnlockNumber('7')">7</button>
+        <button onclick="insertUnlockNumber('8')">8</button>
+        <button onclick="insertUnlockNumber('9')">9</button>
+        <button onclick="clearUnlockNumber()">⌫</button>
+        <button onclick="insertUnlockNumber('0')">0</button>
+        <button onclick="checkUnlockPassword()">✔</button>
+      </div>
+      <p id="unlockMessage" class="message"></p>
+      <p id="unlockErrorMessage" class="error-message hidden">Senha incorreta! Tente novamente.</p>
     </div>
   </div>
 
   <script>
-    let encryptedPassword = "";
-    let attemptsLeft = 3;
-
-    async function fetchConfig() {
-      const response = await fetch('/config');
-      const config = await response.json();
-      encryptedPassword = config.mainPassword.trim();
+    async function getHash(str) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(str);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     }
 
-    window.onload = async function () {
-      await fetchConfig();
+    const ENCRYPTED_MAIN_PASSWORD = process.env.ENCRYPTED_MAIN_PASSWORD;
+    const ENCRYPTED_UNLOCK_PASSWORD = process.env.ENCRYPTED_UNLOCK_PASSWORD;
+
+    let attempts = 10;
+    let username = "";
+
+    window.onload = function() {
+      let savedUsername = localStorage.getItem("username");
+      let savedAttempts = localStorage.getItem("attempts");
+
+      if (savedUsername) {
+        username = savedUsername;
+        document.getElementById("userNameDisplay").textContent = username;
+        document.getElementById("nameSection").classList.add("hidden");
+        document.getElementById("lockSection").classList.remove("hidden");
+        document.getElementById("message").innerHTML = `Bem-vindo, <span class="highlight">${username}</span>!`;
+      }
+
+      if (savedAttempts) {
+        attempts = parseInt(savedAttempts);
+        document.getElementById("attempts").textContent = `Tentativas restantes: ${attempts}`;
+      }
     };
+
+    document.getElementById("startButton").addEventListener("click", startGame);
+
+    function startGame() {
+      username = document.getElementById("username").value.trim();
+      if (!username) {
+        document.getElementById("message").textContent = "Digite seu nome!";
+        document.getElementById("username").focus();
+        return;
+      }
+      document.getElementById("userNameDisplay").textContent = username;
+      document.getElementById("nameSection").classList.add("hidden");
+      document.getElementById("lockSection").classList.remove("hidden");
+      document.getElementById("message").innerHTML = `Bem-vindo, <span class="highlight">${username}</span>!`;
+      document.getElementById("attempts").textContent = `Tentativas restantes: ${attempts}`;
+      document.getElementById("errorMessage").classList.add("hidden");
+      document.getElementById("title").classList.add("hidden");
+
+      localStorage.setItem("username", username);
+      localStorage.setItem("attempts", attempts);
+    }
 
     function insertNumber(num) {
       let input = document.getElementById("password");
@@ -200,36 +250,28 @@
       document.getElementById("password").value = "";
     }
 
-    function updateAttemptsMessage() {
-      document.getElementById("attemptsLeft").textContent = attemptsLeft;
-    }
-
     async function checkPassword() {
-      let input = document.getElementById("password").value.trim();
-
-      if (input === encryptedPassword) {
-        document.getElementById("password").type = "text";  
+      let input = document.getElementById("password").value;
+      let hashedInput = await getHash(input);
+      if (hashedInput === ENCRYPTED_MAIN_PASSWORD) {
         document.getElementById("lock").textContent = "🔓";
         document.getElementById("lock").classList.add("unlock");
-        document.getElementById("congratulationsMessage").classList.remove("hidden");
-        document.getElementById("message").classList.add("hidden");
-        document.getElementById("keypad").classList.add("hidden");
       } else {
+        attempts--;
+        document.getElementById("attempts").textContent = `Tentativas restantes: ${attempts}`;
         clearNumber();
-        document.getElementById("errorMessage").classList.remove("hidden");
-        document.getElementById("password").classList.add("input-error");
-
-        setTimeout(() => {
-          document.getElementById("password").classList.remove("input-error");
-        }, 500);
-
-        attemptsLeft--;
-        updateAttemptsMessage();
-
-        if (attemptsLeft <= 0) {
-          document.getElementById("keypad").classList.add("hidden");
-          document.getElementById("errorMessage").classList.add("hidden");
+        if (attempts <= 0) {
+          document.getElementById("lockSection").classList.add("hidden");
         }
+      }
+    }
+
+    async function checkUnlockPassword() {
+      let input = document.getElementById("unlockPassword").value;
+      let hashedInput = await getHash(input);
+      if (hashedInput === ENCRYPTED_UNLOCK_PASSWORD) {
+        attempts = 999;
+        document.getElementById("attempts").textContent = `Tentativas restantes: ${attempts}`;
       }
     }
   </script>

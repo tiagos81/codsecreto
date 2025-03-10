@@ -9,7 +9,8 @@ app.get('/', (req, res) => {
 
 app.get('/config', (req, res) => {
   res.json({
-    mainPassword: process.env.ENCRYPTED_MAIN_PASSWORD.trim()
+    mainPassword: process.env.ENCRYPTED_MAIN_PASSWORD,
+    unlockPassword: process.env.ENCRYPTED_UNLOCK_PASSWORD
   });
 });
 
