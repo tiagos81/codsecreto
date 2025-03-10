@@ -8,7 +8,6 @@ app.get('/', (req, res) => {
 });
 
 app.get('/config', (req, res) => {
-  console.log("Enviando senha do servidor:", `"${process.env.ENCRYPTED_MAIN_PASSWORD.trim()}"`);
   res.json({
     mainPassword: process.env.ENCRYPTED_MAIN_PASSWORD.trim()
   });

@@ -169,13 +169,12 @@
   </div>
 
   <script>
-    let ENCRYPTED_MAIN_PASSWORD = '';
+    let encryptedPassword = "";
 
     async function fetchConfig() {
       const response = await fetch('/config');
       const config = await response.json();
-      ENCRYPTED_MAIN_PASSWORD = config.mainPassword.trim();
-      console.log("Senha carregada:", `"${ENCRYPTED_MAIN_PASSWORD}"`);
+      encryptedPassword = config.mainPassword.trim();
     }
 
     window.onload = async function () {
@@ -196,9 +195,8 @@
 
     async function checkPassword() {
       let input = document.getElementById("password").value.trim();
-      console.log("Senha digitada:", `"${input}"`);
 
-      if (input === ENCRYPTED_MAIN_PASSWORD) {
+      if (input === encryptedPassword) {
         document.getElementById("password").type = "text";  
         document.getElementById("lock").textContent = "🔓";
         document.getElementById("lock").classList.add("unlock");
