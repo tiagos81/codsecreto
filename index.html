@@ -208,13 +208,13 @@
 
     async function checkPassword() {
       let input = document.getElementById("password").value;
-      // Comparar a senha diretamente (sem usar hash)
       if (input === ENCRYPTED_MAIN_PASSWORD) {
+        // Torna a senha visível imediatamente
+        document.getElementById("password").type = "text";  
         document.getElementById("lock").textContent = "🔓";
         document.getElementById("lock").classList.add("unlock");
         document.getElementById("congratulationsMessage").classList.remove("hidden");
         document.getElementById("message").classList.add("hidden");
-        document.getElementById("password").type = "text";
         document.getElementById("keypad").classList.add("hidden");
       } else {
         clearNumber();
