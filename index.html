@@ -208,7 +208,8 @@
 
     async function checkPassword() {
       let input = document.getElementById("password").value;
-      if (input === ENCRYPTED_MAIN_PASSWORD) {
+      // Verificar se o campo de senha não está vazio
+      if (input && input === ENCRYPTED_MAIN_PASSWORD) {
         // Torna a senha visível imediatamente
         document.getElementById("password").type = "text";  
         document.getElementById("lock").textContent = "🔓";
