@@ -9,11 +9,10 @@ const PORT = process.env.PORT || 8080;
 
 app.use(cors());
 
-// ✅ Rota correta para retornar as variáveis de ambiente
+// ✅ Rota correta para retornar as senhas
 app.get("/env", (req, res) => {
     res.json({
-        MAIN_PASSWORD: process.env.MAIN_PASSWORD,
-        UNLOCK_PASSWORD: process.env.UNLOCK_PASSWORD
+        MAIN_PASSWORD: process.env.MAIN_PASSWORD
     });
 });
 
