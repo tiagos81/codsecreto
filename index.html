@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Código Secreto</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #26e2db, #fc410f, #fa3746);
+      color: white;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: rgba(0, 0, 0, 0.6);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+    }
+    input {
+      padding: 8px;
+      font-size: 14px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 5px;
+      text-align: center;
+      width: 52.5%;
+      display: block;
+      margin: 10px auto;
+    }
+    button {
+      padding: 10px 25px;
+      font-size: 16px;
+      background: red;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: darkred;
+    }
+    .hidden { display: none; }
+    .highlight {
+      color: #26e2db;
+      font-weight: bold;
+    }
+    .message {
+      font-size: 18px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .lock {
+      font-size: 100px;
+      display: block;
+      transition: transform 0.5s ease-in-out;
+    }
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .keypad button {
+      padding: 15px;
+      font-size: 17px;
+      background: #333;
+      border: none;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .keypad button:hover {
+      background: #555;
+    }
+    @keyframes unlock {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1) rotateY(180deg); }
+    }
+    .lock.unlock {
+      animation: unlock 1s ease-in-out;
+    }
+    .input-error {
+      animation: shake 0.5s ease-in-out;
+    }
+    .error-message {
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .congratulations {
+      font-size: 18px;
+      color: white;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    .username {
+      color: #26e2db;
+    }
+    #title {
+      font-size: 22px;
+      font-weight: bold;
+      color: white;
+      margin-bottom: 20px;
+    }
+    .highlight-white {
+      color: white;
+    }
+    #password {
+      font-weight: bold;
+      color: black;
+      font-size: 21px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="title">Código Secreto</div>
+    <div id="congratulationsMessage" class="congratulations hidden">
+      Parabéns, <span id="userNameDisplay" class="username"></span>, você acertou 👏
+    </div>
+    <div id="nameSection">
+      <p>Digite seu nome para começar:</p>
+      <input type="text" id="username" placeholder="Seu nome">
+      <button id="startButton">Iniciar</button>
+    </div>
+    <div id="lockSection" class="hidden">
+      <p id="message" class="message"></p>  
+      <span id="lock" class="lock">🔒</span>
+      <p>Digite a senha de 6 dígitos:</p>
+      <input type="password" id="password" maxlength="6" readonly>
+      <div class="keypad" id="keypad">
+        <button onclick="insertNumber('1')">1</button>
+        <button onclick="insertNumber('2')">2</button>
+        <button onclick="insertNumber('3')">3</button>
+        <button onclick="insertNumber('4')">4</button>
+        <button onclick="insertNumber('5')">5</button>
+        <button onclick="insertNumber('6')">6</button>
+        <button onclick="insertNumber('7')">7</button>
+        <button onclick="insertNumber('8')">8</button>
+        <button onclick="insertNumber('9')">9</button>
+        <button onclick="clearNumber()">⌫</button>
+        <button onclick="insertNumber('0')">0</button>
+        <button onclick="checkPassword()">✔</button>
+      </div>
+      <p id="errorMessage" class="error-message hidden">Senha incorreta! Tente novamente.</p>
+    </div>
+  </div>
+
+  <script>
+    async function getHash(str) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(str);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    let ENCRYPTED_MAIN_PASSWORD = '';
+
+    // Função para buscar a senha no servidor
+    async function fetchConfig() {
+      const response = await fetch('/config');
+      const config = await response.json();
+      ENCRYPTED_MAIN_PASSWORD = config.mainPassword;
+    }
+
+    // Chamando a função para carregar as variáveis de ambiente
+    window.onload = fetchConfig;
+
+    let username = "";
+
+    document.getElementById("startButton").addEventListener("click", startGame);
+
+    function startGame() {
+      username = document.getElementById("username").value.trim();
+      if (!username) {
+        document.getElementById("message").textContent = "Digite seu nome!";
+        document.getElementById("username").focus();
+        return;
+      }
+      document.getElementById("userNameDisplay").textContent = username;
+      document.getElementById("nameSection").classList.add("hidden");
+      document.getElementById("lockSection").classList.remove("hidden");
+      document.getElementById("message").innerHTML = `Bem-vindo, <span class="highlight">${username}</span>!`;
+      document.getElementById("errorMessage").classList.add("hidden");
+
+      localStorage.setItem("username", username);
+    }
+
+    function insertNumber(num) {
+      let input = document.getElementById("password");
+      if (input.value.length < 6) {
+        input.value += num;
+        input.focus();
+      }
+    }
+
+    function clearNumber() {
+      document.getElementById("password").value = "";
+    }
+
+    async function checkPassword() {
+      let input = document.getElementById("password").value;
+      let hashedInput = await getHash(input);
+      if (hashedInput === ENCRYPTED_MAIN_PASSWORD) {
+        document.getElementById("lock").textContent = "🔓";
+        document.getElementById("lock").classList.add("unlock");
+        document.getElementById("congratulationsMessage").classList.remove("hidden");
+        document.getElementById("message").classList.add("hidden");
+        document.getElementById("password").type = "text";
+        document.getElementById("keypad").classList.add("hidden");
+      } else {
+        clearNumber();
+        document.getElementById("errorMessage").classList.remove("hidden");
+      }
+    }
+  </script>
+</body>
+</html>
