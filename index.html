@@ -208,6 +208,7 @@
 
     async function checkPassword() {
       let input = document.getElementById("password").value;
+      // Comparar a senha diretamente (sem usar hash)
       if (input === ENCRYPTED_MAIN_PASSWORD) {
         document.getElementById("lock").textContent = "🔓";
         document.getElementById("lock").classList.add("unlock");
