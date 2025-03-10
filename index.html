@@ -162,14 +162,6 @@
   </div>
 
   <script>
-    async function getHash(str) {
-      const encoder = new TextEncoder();
-      const data = encoder.encode(str);
-      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
     let ENCRYPTED_MAIN_PASSWORD = '';
 
     // Função para buscar a senha no servidor
@@ -216,8 +208,7 @@
 
     async function checkPassword() {
       let input = document.getElementById("password").value;
-      let hashedInput = await getHash(input);
-      if (hashedInput === ENCRYPTED_MAIN_PASSWORD) {
+      if (input === ENCRYPTED_MAIN_PASSWORD) {
         document.getElementById("lock").textContent = "🔓";
         document.getElementById("lock").classList.add("unlock");
         document.getElementById("congratulationsMessage").classList.remove("hidden");
