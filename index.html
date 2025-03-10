@@ -149,7 +149,7 @@
       <p id="message" class="message"></p>  
       <span id="lock" class="lock">🔒</span>
       <p>Digite a senha de 6 dígitos:</p>
-      <input type="password" id="password" maxlength="6" readonly>
+      <input type="password" id="password" maxlength="6">
       <div class="keypad" id="keypad">
         <button onclick="insertNumber('1')">1</button>
         <button onclick="insertNumber('2')">2</button>
@@ -171,35 +171,16 @@
   <script>
     let ENCRYPTED_MAIN_PASSWORD = '';
 
-    // Função para buscar a senha no servidor
     async function fetchConfig() {
       const response = await fetch('/config');
       const config = await response.json();
       ENCRYPTED_MAIN_PASSWORD = config.mainPassword;
+      console.log("Senha carregada:", ENCRYPTED_MAIN_PASSWORD);
     }
 
-    // Chamando a função para carregar as variáveis de ambiente
-    window.onload = fetchConfig;
-
-    let username = "";
-
-    document.getElementById("startButton").addEventListener("click", startGame);
-
-    function startGame() {
-      username = document.getElementById("username").value.trim();
-      if (!username) {
-        document.getElementById("message").textContent = "Digite seu nome!";
-        document.getElementById("username").focus();
-        return;
-      }
-      document.getElementById("userNameDisplay").textContent = username;
-      document.getElementById("nameSection").classList.add("hidden");
-      document.getElementById("lockSection").classList.remove("hidden");
-      document.getElementById("message").innerHTML = `Bem-vindo, <span class="highlight">${username}</span>!`;
-      document.getElementById("errorMessage").classList.add("hidden");
-
-      localStorage.setItem("username", username);
-    }
+    window.onload = async function () {
+      await fetchConfig();
+    };
 
     function insertNumber(num) {
       let input = document.getElementById("password");
@@ -215,9 +196,7 @@
 
     async function checkPassword() {
       let input = document.getElementById("password").value;
-      // Verificar se o campo de senha não está vazio e comparar
-      if (input && input === ENCRYPTED_MAIN_PASSWORD) {
-        // Torna a senha visível imediatamente
+      if (input === ENCRYPTED_MAIN_PASSWORD) {
         document.getElementById("password").type = "text";  
         document.getElementById("lock").textContent = "🔓";
         document.getElementById("lock").classList.add("unlock");
@@ -227,10 +206,10 @@
       } else {
         clearNumber();
         document.getElementById("errorMessage").classList.remove("hidden");
-        document.getElementById("password").classList.add("input-error"); // Adicionando animação de erro
+        document.getElementById("password").classList.add("input-error");
 
         setTimeout(() => {
-          document.getElementById("password").classList.remove("input-error"); // Remover animação após o tempo
+          document.getElementById("password").classList.remove("input-error");
         }, 500);
       }
     }
