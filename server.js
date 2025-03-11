@@ -9,12 +9,15 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 
-// Rota para testar se o servidor está rodando
+// ✅ Servir arquivos do frontend
+app.use(express.static("public"));
+
+// ✅ Teste para verificar se o servidor está rodando
 app.get("/", (req, res) => {
     res.send("🚀 Servidor está rodando!");
 });
 
-// Rota para fornecer a senha
+// ✅ Rota para fornecer a senha
 app.get("/env", (req, res) => {
     res.json({
         MAIN_PASSWORD: process.env.MAIN_PASSWORD || "Senha não encontrada"
